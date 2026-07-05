@@ -17,7 +17,7 @@
 
 set -u
 
-VERSION="2.1.0"
+VERSION="2.1.1"
 
 ############################################
 # UI
@@ -664,7 +664,11 @@ disable_ipv6_full(){
     ui_sep
     if [ "$ASSUME_YES" != "1" ]; then
       ui_confirm "Продолжить?" || { ui_info "Отмена"; ui_pause; return; }
-      if ui_confirm "Дополнительно вырубить IPv6 на уровне ядра (sysctl)?"; then HARD_SYSCTL="1"; fi
+      ui_sep
+      ui_info "Обычное отключение (рекомендуется): выключает IPv6 через настройки"
+      ui_info "OpenWrt, сохраняет link-local и совместимость. По умолчанию — жми Enter."
+      ui_info "Жёсткое (sysctl): гасит стек IPv6 в ядре целиком, включая fe80::. Нужно редко."
+      if ui_confirm "Дополнительно вырубить IPv6 на уровне ядра (sysctl)? (Enter = нет)"; then HARD_SYSCTL="1"; fi
     fi
   fi
 
