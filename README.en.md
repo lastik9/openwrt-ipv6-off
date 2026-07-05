@@ -88,6 +88,24 @@ sh ipv6-off.sh --diag                 # collect diagnostics to a file
 sh ipv6-off.sh --help                 # help
 ```
 
+## Normal vs hard (sysctl) disable
+
+[#normal-vs-hard-sysctl-disable](#normal-vs-hard-sysctl-disable)
+
+When disabling, the script asks: `Also disable IPv6 at the kernel level (sysctl)? [y/N]`. The default (just press **Enter**, or `N`) is the **normal disable**, and that's what you want in most cases.
+
+**Normal disable (Enter / N).** IPv6 is turned off through OpenWrt settings: address assignment, RA/DHCPv6 and prefixes (`ula_prefix`, `ip6assign`, `reqaddress/reqprefix`, `wan6`) are removed, IPv6 firewall rules are cleared, and `odhcpd` is stopped. No IPv6 traffic flows and nothing leaks past your proxy/VPN. The kernel module stays loaded and link-local addresses (`fe80::…`) remain on the interfaces. This is the clean, reversible method — exactly what the original script did.
+
+**Hard disable (`y` in the menu, or the `--hard` flag).** Additionally sets `net.ipv6.conf.{all,default,lo}.disable_ipv6=1` via a persistent `/etc/sysctl.d/99-ipv6-off.conf`, fully shutting down the kernel IPv6 stack, including link-local. What this entails:
+
+- Even `fe80::…` link-local addresses disappear from every interface.
+- Software that expects at least local IPv6 may behave unexpectedly: some daemons, sometimes LuCI, inter-service communication.
+- It adds nothing for the typical "just turn IPv6 off" goal — the normal disable is enough to stop all IPv6 traffic.
+
+**Bottom line: press Enter (normal disable).** The `--hard` mode is only for specific cases — a requirement to remove the IPv6 stack entirely, or when something keeps bringing link-local up despite the UCI settings and it gets in the way.
+
+Rollback is identical for both modes (`--restore-last` or menu item 5). If you used `--hard`, restore removes `/etc/sysctl.d/99-ipv6-off.conf` and sets `disable_ipv6=0` back on its own — nothing extra to clean up.
+
 ## If you lose access after disabling
 
 [#if-you-lose-access-after-disabling](#if-you-lose-access-after-disabling)
