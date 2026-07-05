@@ -126,32 +126,33 @@ main(){
 
   # Интерактивное меню — код показываем ТОЛЬКО по запросу, в пейджере
   while :; do
-    printf "%s[У]%sстановить   %s[П]%sоказать код   %s[О]%sтмена: " \
+    printf "%s1)%s Установить   %s2)%s Показать код   %s3)%s Отмена\n" \
       "$GRN" "$RST" "$CYN" "$RST" "$RED" "$RST"
+    printf "Ваш выбор [1-3]: "
     IFS= read -r ans || true
     case "${ans:-}" in
-      ""|у|У|y|Y|д|Д)
+      1|"")
         if do_install "$tmp"; then ok "Установлено: $DEST"; else rm -f "$tmp"; exit 1; fi
         rm -f "$tmp" 2>/dev/null
         printf "\n"
-        printf "Запустить менеджер сейчас? [y/N]: "
+        printf "Запустить менеджер сейчас? [1 - да / Enter - нет]: "
         IFS= read -r r || true
         case "${r:-}" in
-          y|Y|д|Д) exec sh "$DEST" ;;
+          1|y|Y) exec sh "$DEST" ;;
           *) dim "Позже: sh $DEST" ; exit 0 ;;
         esac
         ;;
-      п|П|v|V|c|C)
+      2)
         view_code "$tmp"
         printf "\n"
         ;;
-      о|О|n|N|q|Q)
+      3)
         dim "Отмена. Ничего не установлено."
         rm -f "$tmp" 2>/dev/null
         exit 0
         ;;
       *)
-        warn "Не понял. Введите У, П или О."
+        warn "Не понял. Введите 1, 2 или 3."
         ;;
     esac
   done
