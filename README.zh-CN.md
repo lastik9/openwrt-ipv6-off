@@ -27,7 +27,7 @@
 [#脚本做了什么](#脚本做了什么)
 
 1. **备份。** 精确复制 `network`、`dhcp`、`firewall`（原始 `/etc/config/*`）并记录 `odhcpd` 状态，使回滚能还原到原样，且不会重复规则。
-2. **Watchdog。** 在 `/tmp` 启动一个独立的保险程序：关闭后它检查 IPv4 连接（`ping 1.1.1.1 / 8.8.8.8`），若链路未恢复则自动还原备份。它独立于 SSH 会话运行，能在断连后继续工作。
+2. **Watchdog。** 在 `/tmp` 启动一个独立的保险程序：关闭后它检查 IPv4 连接（依次 ping `1.1.1.1`、`8.8.8.8`、`77.88.8.8`、`77.88.8.1`——只要有一个响应即视为成功），若链路未恢复则自动还原备份。它独立于 SSH 会话运行，能在断连后继续工作。列表中的 Yandex 地址是为处于白名单后（Cloudflare/Google 可能不可达）的路由器提供的兜底；该列表由脚本开头的 `WD_PING_HOSTS` 变量设置。
 3. **在 UCI 中关闭 IPv6。** 移除 `ula_prefix`，设置 `lan.ip6assign=0`、`wan.reqaddress=none` / `reqprefix=no`，删除 `wan6`，在 lan 与 wan 上关闭 `dhcpv6`/`ra`/`ndp`，并清理 IPv6 防火墙规则（按索引倒序删除——否则索引会错位）。
 4. **odhcpd。** 停止服务并禁用自启动。
 5. *(可选)* **sysctl。** 通过持久化的 `/etc/sysctl.d/` 在内核层面强制关闭 IPv6——由 `--hard` 参数或菜单提示启用。
@@ -39,19 +39,36 @@
 
 [#安装](#安装)
 
-命令需**在路由器上**（通过 SSH）执行，而非在电脑上。请先下载并查看代码，然后再运行：
+命令需**在路由器上**（通过 SSH）执行。安装器会下载脚本，显示简短摘要（版本、大小、SHA256、功能说明），并可按需在分页器中翻阅源码——不会把全部代码刷屏：
 
 ```
-wget https://raw.githubusercontent.com/lastik9/openwrt-ipv6-off/main/ipv6-off.sh
-cat ipv6-off.sh        # 运行前先查看
+wget -O install.sh https://raw.githubusercontent.com/lastik9/openwrt-ipv6-off/main/install.sh
+sh install.sh
+```
+
+安装器菜单：`У`（安装）、`П`（查看代码——在分页器中打开，按 `q` 退出）、`О`（取消）。
+
+非交互式 / 用于自动化：
+
+```
+sh install.sh --yes        # 静默安装
+sh install.sh --yes --run  # 安装并立即启动管理器
+```
+
+如果 BusyBox 自带的 `wget` 因 HTTPS/SSL 报错，请改用 `uclient-fetch`：
+
+```
+uclient-fetch -O install.sh https://raw.githubusercontent.com/lastik9/openwrt-ipv6-off/main/install.sh
+```
+
+<details>
+<summary>不使用安装器（直接下载文件）</summary>
+
+```
+wget -O ipv6-off.sh https://raw.githubusercontent.com/lastik9/openwrt-ipv6-off/main/ipv6-off.sh
 sh ipv6-off.sh
 ```
-
-如果 BusyBox 自带的 `wget` 因 HTTPS/SSL 报错，请使用 `uclient-fetch`：
-
-```
-uclient-fetch -O ipv6-off.sh https://raw.githubusercontent.com/lastik9/openwrt-ipv6-off/main/ipv6-off.sh
-```
+</details>
 
 ## 用法
 

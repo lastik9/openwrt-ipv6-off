@@ -27,7 +27,7 @@ This script removes the chore and the risk: it does everything in one action, wi
 [#what-the-script-does](#what-the-script-does)
 
 1. **Backup.** Takes an exact copy of `network`, `dhcp`, `firewall` (raw `/etc/config/*`) and records the `odhcpd` state, so a rollback restores exactly what was there — with no duplicated rules.
-2. **Watchdog.** Launches a standalone safety net in `/tmp`: after disabling, it checks IPv4 connectivity (`ping 1.1.1.1 / 8.8.8.8`) and restores the backup by itself if the link doesn't come up. It runs independently of the SSH session and survives a disconnect.
+2. **Watchdog.** Launches a standalone safety net in `/tmp`: after disabling, it checks IPv4 connectivity (pings `1.1.1.1`, `8.8.8.8`, `77.88.8.8`, `77.88.8.1` in turn — success if any one replies) and restores the backup by itself if the link doesn't come up. It runs independently of the SSH session and survives a disconnect. The Yandex addresses are a fallback for routers behind allow-lists where Cloudflare/Google may be unreachable; the list is set by the `WD_PING_HOSTS` variable near the top of the script.
 3. **Disable IPv6 in UCI.** Removes `ula_prefix`, sets `lan.ip6assign=0`, `wan.reqaddress=none` / `reqprefix=no`, deletes `wan6`, turns off `dhcpv6`/`ra`/`ndp` on lan and wan, and clears IPv6 firewall rules (in reverse index order — otherwise the indices shift).
 4. **odhcpd.** Stops the service and disables autostart.
 5. *(Optional)* **sysctl.** A hard kernel-level IPv6 disable with a persistent `/etc/sysctl.d/` entry — enabled via the `--hard` flag or the menu prompt.
@@ -39,19 +39,36 @@ Nothing is irreversible: every run starts with a backup, and restore is availabl
 
 [#installation](#installation)
 
-Run the commands **on the router** (over SSH), not on your computer. Download and read the code first, then run it:
+Run the commands **on the router** (over SSH). The installer downloads the script, shows a short summary (version, size, SHA256, what it does), and optionally lets you page through the source — without dumping all the code to the screen:
 
 ```
-wget https://raw.githubusercontent.com/lastik9/openwrt-ipv6-off/main/ipv6-off.sh
-cat ipv6-off.sh        # review before running
+wget -O install.sh https://raw.githubusercontent.com/lastik9/openwrt-ipv6-off/main/install.sh
+sh install.sh
+```
+
+In the installer menu: `У` (install), `П` (show code — opens in a pager, quit with `q`), `О` (cancel).
+
+Non-interactive / for automation:
+
+```
+sh install.sh --yes        # install silently
+sh install.sh --yes --run  # install and launch the manager right away
+```
+
+If BusyBox's built-in `wget` complains about HTTPS/SSL, replace it with `uclient-fetch`:
+
+```
+uclient-fetch -O install.sh https://raw.githubusercontent.com/lastik9/openwrt-ipv6-off/main/install.sh
+```
+
+<details>
+<summary>Install without the installer (download the file directly)</summary>
+
+```
+wget -O ipv6-off.sh https://raw.githubusercontent.com/lastik9/openwrt-ipv6-off/main/ipv6-off.sh
 sh ipv6-off.sh
 ```
-
-If BusyBox's built-in `wget` complains about HTTPS/SSL, use `uclient-fetch`:
-
-```
-uclient-fetch -O ipv6-off.sh https://raw.githubusercontent.com/lastik9/openwrt-ipv6-off/main/ipv6-off.sh
-```
+</details>
 
 ## Usage
 

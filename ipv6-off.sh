@@ -17,7 +17,7 @@
 
 set -u
 
-VERSION="2.0.0"
+VERSION="2.1.0"
 
 ############################################
 # UI
@@ -64,6 +64,10 @@ WD_DELAY="25"            # пауза перед первой проверкой
 WD_TRIES="6"             # число попыток
 WD_INTERVAL="5"          # интервал между попытками
 WD_PING_TIMEOUT="2"      # таймаут одного ping
+# Хосты для проверки IPv4-связи (успех = ответил ХОТЯ БЫ ОДИН).
+# Cloudflare/Google + Яндекс как подстраховка: за белыми списками
+# 1.1.1.1/8.8.8.8 могут быть недоступны, а 77.88.8.8/77.88.8.1 обычно работают.
+WD_PING_HOSTS="1.1.1.1 8.8.8.8 77.88.8.8 77.88.8.1"
 
 # Флаги неинтерактивного режима
 ASSUME_YES="0"
@@ -299,7 +303,11 @@ list_backups(){
   ls -1 "$BACKUP_ROOT" 2>/dev/null | sort
 }
 
+# Результат кладём в глобальную PICKED_DIR (НЕ через stdout: вызов идёт из
+# интерактивного меню напрямую, а не через $(...), иначе UI "съедается")
+PICKED_DIR=""
 pick_backup(){
+  PICKED_DIR=""
   ui_clear
   printf "%s🗂 Выбор бэкапа%s\n" "$BLU" "$RST"
   ui_sep
@@ -313,7 +321,7 @@ pick_backup(){
   [ "$n" = "0" ] && return 1
   sel="$(echo "$b_list" | sed -n "${n}p")"
   if [ -z "$sel" ]; then ui_err "Неверный выбор"; ui_pause; return 1; fi
-  printf "%s" "$BACKUP_ROOT/$sel"
+  PICKED_DIR="$BACKUP_ROOT/$sel"
   return 0
 }
 
@@ -375,8 +383,8 @@ restore_menu(){
       if restore_backup_dir "$BACKUP_ROOT/$last" ""; then ui_ok "Готово"; else ui_err "Ошибка (см. $LOG)"; fi
       ui_pause ;;
     2)
-      sel_dir="$(pick_backup)" || return 0
-      if restore_backup_dir "$sel_dir" ""; then ui_ok "Готово"; else ui_err "Ошибка (см. $LOG)"; fi
+      pick_backup || return 0
+      if restore_backup_dir "$PICKED_DIR" ""; then ui_ok "Готово"; else ui_err "Ошибка (см. $LOG)"; fi
       ui_pause ;;
     0) return 0 ;;
     *) ui_err "Неверный выбор"; sleep 1 ;;
@@ -399,9 +407,9 @@ backups_manage_menu(){
   IFS= read -r m || true
   case "$m" in
     1)
-      sel_dir="$(pick_backup)" || return 0
-      if ui_confirm "Удалить $sel_dir ?"; then
-        rm -rf "$sel_dir" 2>/dev/null || true; log "BACKUP deleted: $sel_dir"; ui_ok "Удалено"
+      pick_backup || return 0
+      if ui_confirm "Удалить $PICKED_DIR ?"; then
+        rm -rf "$PICKED_DIR" 2>/dev/null || true; log "BACKUP deleted: $PICKED_DIR"; ui_ok "Удалено"
       else ui_info "Отмена"; fi
       ui_pause ;;
     2)
@@ -442,13 +450,15 @@ DELAY='$WD_DELAY'
 TRIES='$WD_TRIES'
 INTERVAL='$WD_INTERVAL'
 PT='$WD_PING_TIMEOUT'
+PING_HOSTS='$WD_PING_HOSTS'
 CONFIGS='$CONFIGS'
 SYSCTL_FILE='$SYSCTL_FILE'
 
 wlog(){ printf "[%s] WD %s\n" "\$(date '+%Y-%m-%d %H:%M:%S')" "\$*" >>"\$LOG" 2>/dev/null; }
 ping_ok(){
-  ping -c1 -W "\$PT" 1.1.1.1 >/dev/null 2>&1 && return 0
-  ping -c1 -W "\$PT" 8.8.8.8 >/dev/null 2>&1 && return 0
+  for h in \$PING_HOSTS; do
+    ping -c1 -W "\$PT" "\$h" >/dev/null 2>&1 && return 0
+  done
   return 1
 }
 
@@ -650,7 +660,7 @@ disable_ipv6_full(){
     printf "%s🛑 Отключение IPv6%s\n" "$BLU" "$RST"; ui_sep
     ui_warn "Внимание: будет перезапущена сеть"
     ui_info "Доступ по SSH/LuCI может временно пропасть"
-    ui_info "Включаю защиту отката по IPv4 (успех = ping 1.1.1.1 или 8.8.8.8)"
+    ui_info "Включаю защиту отката по IPv4 (успех = ответит любой из: $WD_PING_HOSTS)"
     ui_sep
     if [ "$ASSUME_YES" != "1" ]; then
       ui_confirm "Продолжить?" || { ui_info "Отмена"; ui_pause; return; }
