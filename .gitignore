@@ -1,0 +1,10 @@
+# Runtime artifacts (created on the router, not part of the repo)
+*.log
+*.log.1
+ipv6-diag-*.txt
+backups/
+
+# Editor / OS noise
+.DS_Store
+*.swp
+*~

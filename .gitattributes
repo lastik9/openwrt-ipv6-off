@@ -1,0 +1,6 @@
+# Normalize line endings
+* text=auto eol=lf
+*.sh text eol=lf
+
+# Keep GitHub's language stats focused on the script
+*.md linguist-documentation
