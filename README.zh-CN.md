@@ -46,7 +46,7 @@ wget -O install.sh https://raw.githubusercontent.com/lastik9/openwrt-ipv6-off/ma
 sh install.sh
 ```
 
-安装器菜单：`У`（安装）、`П`（查看代码——在分页器中打开，按 `q` 退出）、`О`（取消）。
+安装器菜单：`1`（安装）、`2`（查看代码——在分页器中打开，按 `q` 退出）、`3`（取消）。直接按 **Enter** 不会安装任何内容——菜单会重新询问；按 `1` 进行安装。
 
 非交互式 / 用于自动化：
 
@@ -69,6 +69,29 @@ wget -O ipv6-off.sh https://raw.githubusercontent.com/lastik9/openwrt-ipv6-off/m
 sh ipv6-off.sh
 ```
 </details>
+
+## 卸载
+
+[#卸载](#卸载)
+
+命令需**在路由器上**（通过 SSH）执行。下载并运行卸载程序：
+
+```
+wget -O uninstall.sh https://raw.githubusercontent.com/lastik9/openwrt-ipv6-off/main/uninstall.sh
+sh uninstall.sh
+```
+
+它会停止 watchdog，必要时从最近的备份恢复 IPv6，删除硬模式产物（`/etc/sysctl.d/99-ipv6-off.conf`）并移除管理脚本。备份和日志默认**保留**——可单独删除。
+
+非交互式 / 带参数：
+
+```
+sh uninstall.sh --yes         # 无提示；不改变 IPv6 状态，保留备份
+sh uninstall.sh --restore     # 删除前从最近的备份恢复 IPv6
+sh uninstall.sh --purge       # 全部删除，包括数据（备份 / 日志 / 诊断）
+```
+
+如果当前 IPv6 处于**关闭**状态，卸载程序默认会先提示恢复它——以免让你既没有网络、又失去回滚工具。用 `--no-restore` 可关闭该提示。
 
 ## 用法
 

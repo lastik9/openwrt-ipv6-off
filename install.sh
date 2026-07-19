@@ -45,6 +45,12 @@ err(){  printf "%s❌ %s%s\n" "$RED" "$*" "$RST"; }
 dim(){  printf "%s%s%s\n" "$GRY" "$*" "$RST"; }
 rule(){ printf "%s══════════════════════════════════════════════%s\n" "$BLU" "$RST"; }
 
+# Читает строку и срезает возможный \r (CRLF из некоторых SSH-клиентов/буфера)
+read_line(){
+  IFS= read -r __rl || true
+  printf '%s' "$__rl" | tr -d '\r'
+}
+
 banner(){
   printf "\n"
   rule
@@ -129,14 +135,14 @@ main(){
     printf "%s1)%s Установить   %s2)%s Показать код   %s3)%s Отмена\n" \
       "$GRN" "$RST" "$CYN" "$RST" "$RED" "$RST"
     printf "Ваш выбор [1-3]: "
-    IFS= read -r ans || true
+    ans="$(read_line)"
     case "${ans:-}" in
-      1|"")
+      1)
         if do_install "$tmp"; then ok "Установлено: $DEST"; else rm -f "$tmp"; exit 1; fi
         rm -f "$tmp" 2>/dev/null
         printf "\n"
         printf "Запустить менеджер сейчас? [1 - да / Enter - нет]: "
-        IFS= read -r r || true
+        r="$(read_line)"
         case "${r:-}" in
           1|y|Y) exec sh "$DEST" ;;
           *) dim "Позже: sh $DEST" ; exit 0 ;;
@@ -150,6 +156,9 @@ main(){
         dim "Отмена. Ничего не установлено."
         rm -f "$tmp" 2>/dev/null
         exit 0
+        ;;
+      "")
+        dim "Ничего не выбрано — введите 1 (установить), 2 (код) или 3 (отмена)."
         ;;
       *)
         warn "Не понял. Введите 1, 2 или 3."

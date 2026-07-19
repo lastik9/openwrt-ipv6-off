@@ -46,7 +46,7 @@ wget -O install.sh https://raw.githubusercontent.com/lastik9/openwrt-ipv6-off/ma
 sh install.sh
 ```
 
-In the installer menu: `У` (install), `П` (show code — opens in a pager, quit with `q`), `О` (cancel).
+In the installer menu: `1` (install), `2` (show code — opens in a pager, quit with `q`), `3` (cancel). An empty **Enter** installs nothing — the menu just re-prompts; press `1` to install.
 
 Non-interactive / for automation:
 
@@ -69,6 +69,29 @@ wget -O ipv6-off.sh https://raw.githubusercontent.com/lastik9/openwrt-ipv6-off/m
 sh ipv6-off.sh
 ```
 </details>
+
+## Uninstall
+
+[#uninstall](#uninstall)
+
+Run the commands **on the router** (over SSH). Download and run the uninstaller:
+
+```
+wget -O uninstall.sh https://raw.githubusercontent.com/lastik9/openwrt-ipv6-off/main/uninstall.sh
+sh uninstall.sh
+```
+
+It stops the watchdog, optionally restores IPv6 from the last backup, removes the hard-mode artifact (`/etc/sysctl.d/99-ipv6-off.conf`) and deletes the manager. Backups and the log are **kept** by default — you can remove them separately.
+
+Non-interactive / with options:
+
+```
+sh uninstall.sh --yes         # no prompts; IPv6 state left as-is, backups kept
+sh uninstall.sh --restore     # restore IPv6 from the last backup before removing
+sh uninstall.sh --purge       # remove everything, including data (backups / log / diagnostics)
+```
+
+If IPv6 is currently **disabled**, the uninstaller offers to restore it first by default — so you're not left without internet and without the rollback tool. Turn that offer off with `--no-restore`.
 
 ## Usage
 
