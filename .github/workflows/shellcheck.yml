@@ -1,0 +1,18 @@
+name: shellcheck
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: shellcheck version
+        run: shellcheck --version
+      - name: Run shellcheck
+        run: shellcheck -s sh ipv6-off.sh install.sh uninstall.sh
