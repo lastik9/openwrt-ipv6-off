@@ -1,5 +1,7 @@
 # openwrt-ipv6-off
 
+[![release](https://img.shields.io/github/v/release/lastik9/openwrt-ipv6-off)](https://github.com/lastik9/openwrt-ipv6-off/releases) [![shellcheck](https://github.com/lastik9/openwrt-ipv6-off/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/lastik9/openwrt-ipv6-off/actions/workflows/shellcheck.yml) [![license: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
 [Русский](README.md) · [English](README.en.md) · **中文**
 
 用单个脚本在 **OpenWrt** 上关闭 **IPv6**：备份当前设置、关闭 IPv6、在连接丢失时**基于 IPv4 自动回滚**，并提供精确的状态检查与诊断。纯 `ash`/BusyBox，无依赖。

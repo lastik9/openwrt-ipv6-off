@@ -1,5 +1,7 @@
 # openwrt-ipv6-off
 
+[![release](https://img.shields.io/github/v/release/lastik9/openwrt-ipv6-off)](https://github.com/lastik9/openwrt-ipv6-off/releases) [![shellcheck](https://github.com/lastik9/openwrt-ipv6-off/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/lastik9/openwrt-ipv6-off/actions/workflows/shellcheck.yml) [![license: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
 **Русский** · [English](README.en.md) · [中文](README.zh-CN.md)
 
 Менеджер отключения **IPv6** на **OpenWrt** одним скриптом: бэкап текущих настроек, отключение IPv6, **автоматический откат по IPv4** при потере связи, точная проверка статуса и диагностика. Чистый `ash`/BusyBox, без зависимостей.
