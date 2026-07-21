@@ -31,6 +31,15 @@ for a in "$@"; do
   esac
 done
 
+# MIRROR= : качать через зеркало (обход блокировок GitHub).
+# Пример: MIRROR="https://gh-proxy.com/" sh install.sh
+# Итоговый URL = ${MIRROR}${RAW_URL}, напр. https://gh-proxy.com/https://raw.githubusercontent.com/...
+MIRROR="${MIRROR:-}"
+if [ -n "$MIRROR" ]; then
+  case "$MIRROR" in */) : ;; *) MIRROR="$MIRROR/" ;; esac
+  RAW_URL="${MIRROR}${RAW_URL}"
+fi
+
 if [ -t 1 ]; then
   RED="$(printf '\033[31m')"; GRN="$(printf '\033[32m')"; YEL="$(printf '\033[33m')"
   BLU="$(printf '\033[34m')"; CYN="$(printf '\033[36m')"; GRY="$(printf '\033[90m')"

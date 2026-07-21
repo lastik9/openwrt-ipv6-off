@@ -1,6 +1,6 @@
 #!/bin/ash
 # ipv6-off.sh — менеджер отключения IPv6 для OpenWrt
-# Версия: 2.0.0
+# Версия: 2.1.4
 # Лицензия: MIT
 #
 # Возможности:
@@ -17,7 +17,7 @@
 
 set -u
 
-VERSION="2.1.3"
+VERSION="2.1.4"
 
 ############################################
 # UI
@@ -227,7 +227,7 @@ menu(){
   printf "  3) 📦 Диагностика (сохранить в файл)\n"
   printf "  4) 📜 Показать лог\n"
   printf "  5) 🔄 Восстановить из бэкапа (последний / выбрать)\n"
-  printf "  6) 🗂️ Бэкапы (список / удалить)\n"
+  printf "  6) 📁 Бэкапы (список / удалить)\n"
   printf "\n"
   printf "  0) ❌ Выход\n"
   ui_sep
@@ -309,7 +309,7 @@ PICKED_DIR=""
 pick_backup(){
   PICKED_DIR=""
   ui_clear
-  printf "%s🗂️ Выбор бэкапа%s\n" "$BLU" "$RST"
+  printf "%s📁 Выбор бэкапа%s\n" "$BLU" "$RST"
   ui_sep
   b_list="$(list_backups)"
   if [ -z "$b_list" ]; then ui_err "Бэкапы не найдены: $BACKUP_ROOT"; ui_pause; return 1; fi
@@ -393,7 +393,7 @@ restore_menu(){
 
 backups_manage_menu(){
   ui_clear
-  printf "%s🗂️ Бэкапы%s\n" "$BLU" "$RST"
+  printf "%s📁 Бэкапы%s\n" "$BLU" "$RST"
   ui_sep
   b_list="$(list_backups)"
   [ -z "$b_list" ] && { ui_err "Бэкапов не найдено: $BACKUP_ROOT"; ui_pause; return 0; }
